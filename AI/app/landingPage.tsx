@@ -53,17 +53,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   overlay: {
-    width: "85%",
+    width: "92%",
     height: "75%",
-    maxWidth: 400,
+    maxWidth: 420,
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
-    // backgroundColor: "rgba(0, 0, 0, 0.6)", 
-    // borderRadius: 12,
-    backgroundColor: "rgba(0, 0, 50, 0.5)", // Slightly more transparent
+    backgroundColor: "rgba(0, 0, 50, 0.85)", // Slightly darker overlay for better contrast
     backdropFilter: "blur(10px)", // Glass effect
-    borderRadius: 16,
+    borderRadius: 18,
   },
   title: {
     color: "white",
