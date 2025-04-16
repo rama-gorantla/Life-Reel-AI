@@ -30,10 +30,10 @@ const LandingScreen = () => {
           </View>
 
           {/* AI Prompt Button */}
-          <TouchableOpacity style={styles.aiButton} onPress={() => router.push("/featuresPage")}>  
-            <Text style={styles.aiText}>Ask AI to generate your story</Text>
+          <TouchableOpacity style={styles.aiButton} onPress={() => router.push("/featuresPage")}>
+            <Text style={styles.aiText}>Explore and Create Stories with AI</Text>
             <View style={styles.generateButton}>
-              <Text style={styles.generateText}>Generate</Text>
+              <Text style={styles.generateText}>Get Started</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -108,8 +108,9 @@ const styles = StyleSheet.create({
   },
   aiText: {
     color: "#E0F7FA", // Light cyan for contrast
-    fontSize: 16,
+    fontSize: 15,
     flex: 1,
+    textAlign: "center",
   },
   generateButton: {
     shadowColor: "#00BFFF", // Light blue glow
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
-  },  
+  },
   generateText: {
     color: "#ffffff", // Dark text for contrast on golden button
     fontWeight: "bold",

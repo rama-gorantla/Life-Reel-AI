@@ -7,6 +7,7 @@ import OnboardingScreen from './onBoardingScreen';
 export default function HomeScreen() {
   return (
      <View>
+        {/* <LandingScreen></LandingScreen> */}
         <OnboardingScreen></OnboardingScreen>
      </View>
   );

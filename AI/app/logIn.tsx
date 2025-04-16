@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, ImageBackground, TouchableOpacity, StyleSheet, Dimensions, Image } from "react-native";
+import { View, Text, TextInput, ImageBackground, TouchableOpacity, StyleSheet, Dimensions, Image, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons"; // Eye icon for password visibility
 
 const { width, height } = Dimensions.get("window");
 
@@ -10,68 +11,97 @@ const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  // Regular Expressions for Validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Standard email validation
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
   const handleLogin = () => {
-    if (!email || !password) {
-      setError("Please enter both email and password.");
-      return;
-    }
-    setError(""); // Clear error on success
-    // Here you can integrate Firebase/Auth API
+    // if (!email || !password) {
+    //   setError("Please enter both email and password.");
+    //   return;
+    // }
+    // if (!emailRegex.test(email)) {
+    //   setError("Please enter a valid email.");
+    //   return;
+    // }
+    // if (!passwordRegex.test(password)) {
+    //   setError("Password must be at least 8 characters long, including uppercase, lowercase, number, and special character.");
+    //   return;
+    // }
+
+    // setError("");
     router.push("/landingPage");
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ImageBackground
-        source={require("../assets/images/lifereel-bg.jpg")} // Use the same futuristic background
-        style={styles.background}
-        resizeMode="cover"
-      >
-        <View style={styles.overlay}>
-          {/* Logo Image */}
-          <Image source={require("../assets/images/auth.png")} style={styles.image} />
-          
-          {/* Title */}
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Log in to continue your journey</Text>
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <ImageBackground
+            source={require("../assets/images/lifereel-bg.jpg")}
+            style={styles.background}
+            resizeMode="cover"
+          >
+            <View style={styles.overlay}>
+              {/* Logo Image */}
+              <Image source={require("../assets/images/auth.png")} style={styles.image} />
 
-          {/* Input Fields */}
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#D1ECFF"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#D1ECFF"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+              {/* Title */}
+              <Text style={styles.title}>Welcome Back</Text>
+              <Text style={styles.subtitle}>Log in to continue your journey</Text>
 
-          {/* Error Message (Now placed above the Login button) */}
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+              {/* Email Input */}
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                placeholderTextColor="#D1ECFF"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
 
-          {/* Login Button */}
-          <TouchableOpacity style={styles.primaryButton} onPress={handleLogin}>  
-            <Text style={styles.buttonText}>Log In</Text>
-          </TouchableOpacity>
-          
-          {/* Signup & Forgot Password Links */}
-          <TouchableOpacity onPress={() => router.push("/signUp")}>  
-            <Text style={styles.noAccountText}>Don't have an account? <Text style={styles.signupText}>Sign Up</Text></Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push("/forgotPassword")}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
+              {/* Password Input with Eye Icon */}
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="Password"
+                  placeholderTextColor="#D1ECFF"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!passwordVisible}
+                />
+                <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
+                  <Ionicons
+                    name={passwordVisible ? "eye-off" : "eye"}
+                    size={22}
+                    color="white"
+                    style={styles.eyeIcon}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Error Message */}
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+              {/* Login Button */}
+              <TouchableOpacity style={styles.primaryButton} onPress={handleLogin}>
+                <Text style={styles.buttonText}>Log In</Text>
+              </TouchableOpacity>
+
+              {/* Signup & Forgot Password Links */}
+              <TouchableOpacity onPress={() => router.push("/signUp")}>
+                <Text style={styles.noAccountText}>Don't have an account? <Text style={styles.signupText}>Sign Up</Text></Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push("/forgotPassword")}>
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -92,7 +122,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 30,
-    backgroundColor: "rgba(0, 0, 50, 0.85)", // Slightly darker overlay for better contrast
+    backgroundColor: "rgba(0, 0, 50, 0.85)",
     borderRadius: 18,
   },
   image: {
@@ -102,20 +132,20 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   title: {
-    color: "white", 
+    color: "white",
     fontSize: 32,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 10,
   },
   subtitle: {
-    color: "#D1ECFF", // Lighter blue for improved readability
+    color: "#D1ECFF",
     fontSize: 16,
     textAlign: "center",
     marginBottom: 20,
   },
   errorText: {
-    color: "#FF6347", // Red for visibility
+    color: "#FF6347",
     fontSize: 16,
     marginBottom: 12,
     textAlign: "center",
@@ -130,8 +160,26 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
   },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    marginBottom: 12,
+  },
+  passwordInput: {
+    flex: 1,
+    color: "#FFFFFF",
+    fontSize: 16,
+    paddingVertical: 12,
+  },
+  eyeIcon: {
+    marginLeft: 10,
+  },
   primaryButton: {
-    backgroundColor: "#007BFF", // Brighter blue for stronger CTA
+    backgroundColor: "#007BFF",
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 14,
@@ -144,22 +192,22 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
   },
   buttonText: {
-    color: "#FFFFFF", // White text for strong contrast
+    color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "bold",
   },
   noAccountText: {
-    color: "#ADD8E6", // Light blue text for contrast
+    color: "#ADD8E6",
     fontSize: 16,
     marginTop: 14,
   },
   signupText: {
-    color: "#1E90FF", // Gold color for emphasis
+    color: "#1E90FF",
     fontSize: 16,
     fontWeight: "bold",
   },
   forgotPasswordText: {
-    color: "#ADD8E6", // Light blue for visibility
+    color: "#ADD8E6",
     fontSize: 16,
     marginTop: 10,
     textDecorationLine: "underline",
