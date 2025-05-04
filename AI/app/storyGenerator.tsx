@@ -18,53 +18,132 @@ import LottieView from 'lottie-react-native';
 
 const StoryGenerator = () => {
   const router = useRouter();
-  const [prompt, setPrompt] = useState('');
-  const [story, setStory] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [modalVisible, setModalVisible] = useState(false);
+  const [idea, setIdea] = useState(''); // User's story idea input
+  const [story, setStory] = useState(''); // Generated structured story (streamed)
+  const [loading, setLoading] = useState(false); // Loading state
+  const [error, setError] = useState(''); // Error message
+  const [modalVisible, setModalVisible] = useState(false); // Modal visibility
 
-  const isValidPrompt = (text: string) => {
+  // Validate the user's story idea (minimum 5 words)
+  const isValidIdea = (text: string) => {
     return text && text.trim().split(' ').length >= 5;
   };
 
-  const generateFakeStory = (prompt: string) => {
-    return `Based on the prompt "${prompt}", The Heart of Wishes
+  // Function to call the local Ollama API and stream the structured story
+  const fetchStructuredStoryFromOllama = async (idea: string) => {
+    try {
+      console.log('Starting fetchStructuredStoryFromOllama with idea:', idea);
 
-In a quiet village by the hills lived a curious girl named Tara. Every evening, she sat by the river, dreaming of magical lands and talking stars.
+      const response = await fetch('http://localhost:11434/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'deepseek-r1:1.5b', // Replace with the model name you are using in Ollama
+          prompt: `Generate a structured story based on this idea: "${idea}"`,
+          stream: true, // Enable streaming if supported by the API
+        }),
+      });
 
-One evening, she found a tiny glowing stone nestled in the sand. As she picked it up, a soft voice whispered,
-"You’ve found the Heart of Wishes. One true wish, from a kind heart, can change the world."
+      if (!response.body) {
+        console.error('No response body from the server.');
+        throw new Error('No response body from the server.');
+      }
 
-Tara closed her eyes and wished,
-"Let my village be full of joy, so no one feels lonely again."
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let done = false;
 
-The stone glowed, then faded into a warm light that rose into the sky.
+      setStory(''); // Clear the story before streaming
+      let buffer = ''; // Buffer to handle partial JSON chunks
+      let wordBuffer = ''; // Buffer to handle partial words
+      let insideThinkTag = false; // Track if we are inside a <think> tag
 
-From that day on, her village changed — smiles grew brighter, help came easier, and laughter filled the air.
+      console.log('Starting to read the response stream...');
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
 
-Tara never spoke of the stone, but each night, by the river, she smiled… knowing her little wish made a big difference.
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          console.log('Received chunk:', chunk);
 
-”`;
+          buffer += chunk; // Append the chunk to the buffer
+          const lines = buffer.split('\n'); // Split the buffer into lines
+          buffer = lines.pop() || ''; // Keep the last incomplete line in the buffer
+
+          for (const line of lines) {
+            try {
+              console.log('Processing line:', line);
+              const parsed = JSON.parse(line.trim()); // Parse each line as JSON
+              if (parsed.response) {
+                let responseText = parsed.response;
+
+                // Decode escaped characters in the response
+                responseText = responseText.replace(/\\u003c/g, '<').replace(/\\u003e/g, '>');
+
+                // Handle <think> tags that might span multiple iterations
+                if (responseText.includes('<think>')) {
+                  insideThinkTag = true; // Start ignoring content
+                  console.log('Entering <think> tag');
+                }
+
+                if (insideThinkTag) {
+                  // Skip appending content inside <think> tags
+                  if (responseText.includes('</think>')) {
+                    insideThinkTag = false; // End ignoring content
+                    console.log('Exiting </think> tag');
+                    responseText = responseText.split('</think>')[1] || ''; // Keep content after </think>
+                  } else {
+                    console.log('Skipping content inside <think> tag');
+                    continue; // Skip content inside <think> tags
+                  }
+                }
+
+                // Skip empty or meaningless responses
+                //if (responseText.trim() === '' || responseText.trim() === '\n' || responseText.trim() === '**') {
+                //  console.log('Skipping meaningless response:', responseText);
+                //  continue;
+                //}
+
+                // Handle partial words
+                setStory((prev) => prev + responseText);
+              }
+            } catch (err) {
+              console.error('Error parsing JSON chunk:', err, 'Line:', line);
+            }
+          }
+        }
+      }
+
+      console.log('Finished reading the response stream.');
+    } catch (err) {
+      console.error('Error fetching story from Ollama:', err);
+      throw new Error('Failed to generate story. Please try again.');
+    }
   };
 
-  const handleGenerate = () => {
+  // Handle the "Generate Story" button click
+  const handleGenerate = async () => {
     setError('');
     setStory('');
     setLoading(true);
     setModalVisible(true);
 
-    if (!isValidPrompt(prompt)) {
+    if (!isValidIdea(idea)) {
       setLoading(false);
-      setError('Please enter a more descriptive prompt (minimum 5 words).');
+      setError('Please enter a more descriptive story idea (minimum 5 words).');
       return;
     }
 
-    setTimeout(() => {
-      const generated = generateFakeStory(prompt);
-      setStory(generated);
-      setLoading(false);
-    }, 800);
+    try {
+      await fetchStructuredStoryFromOllama(idea); // Call Ollama API with streaming
+    } catch (err: any) {
+      setError(err.message); // Display error message
+    } finally {
+      setLoading(false); // Stop loading
+    }
   };
 
   return (
@@ -78,38 +157,38 @@ Tara never spoke of the stone, but each night, by the river, she smiled… knowi
         <Text style={styles.headerTitle}>📖 AI Story Generator</Text>
       </View>
       <View style={{ alignItems: 'center', marginBottom: 20 }}>
-        <Text style={styles.instruction}>Tell us your story idea and we'll bring it to life ✨</Text>
+        <Text style={styles.instruction}>
+          Enter your story idea below, and we'll turn it into a detailed, structured story ✨
+        </Text>
 
-       
-       
-                       {Platform.OS === 'web' ? (
-                           <Image source={require('../assets/images/read.gif')} style={styles.gif} />
-                       ) : (
-                           <LottieView
-                               source={require('../assets/images/readAI.json')}
-                               autoPlay
-                               loop
-                               style={{ width: 200, height: 200, marginBottom:20 }}
-                           />
-                       )} 
-       
-       
+        {Platform.OS === 'web' ? (
+          <Image source={require('../assets/images/read.gif')} style={styles.gif} />
+        ) : (
+          <LottieView
+            source={require('../assets/images/readAI.json')}
+            autoPlay
+            loop
+            style={{ width: 200, height: 200, marginBottom: 20 }}
+          />
+        )}
       </View>
 
+      {/* Input for the user's story idea */}
       <TextInput
         style={styles.input}
-        placeholder="Enter your story prompt..."
+        placeholder="Enter your story idea..."
         placeholderTextColor="#ccc"
-        value={prompt}
-        onChangeText={setPrompt}
+        value={idea}
+        onChangeText={setIdea}
         multiline
       />
 
+      {/* Button to generate the structured story */}
       <TouchableOpacity style={styles.button} onPress={handleGenerate}>
         <Text style={styles.buttonText}>{loading ? 'Generating...' : 'Generate Story'}</Text>
       </TouchableOpacity>
 
-      {/* Story Popup */}
+      {/* Story Popup to display the generated structured story */}
       <StoryPopup
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -117,6 +196,7 @@ Tara never spoke of the stone, but each night, by the river, she smiled… knowi
         loading={loading}
         errorMessage={error}
       />
+      
     </ScrollView>
   );
 };

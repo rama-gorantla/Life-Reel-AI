@@ -13,7 +13,7 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 2. Start the app
 
    ```bash
-    npx expo start
+   npx expo start
    ```
 
 In the output, you'll find options to open the app in a
@@ -24,6 +24,34 @@ In the output, you'll find options to open the app in a
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+
+## Setting up Ollama
+
+This project integrates with [Ollama](https://ollama.ai) for AI-powered story generation. Follow these steps to set up Ollama:
+
+1. **Install Ollama**  
+   Download and install Ollama from [https://ollama.ai](https://ollama.ai).
+
+2. **Start the Ollama API**  
+   Run the Ollama API server locally:
+   ```bash
+   ollama serve
+   ```
+
+3. **Verify the API**  
+   Ensure the API is running by visiting [http://localhost:11434](http://localhost:11434) in your browser or using a tool like `curl`:
+   ```bash
+   curl http://localhost:11434
+   ```
+
+4. **Configure the Model**  
+   Make sure the required model (e.g., `deepseek-r1:1.5b`) is available in Ollama. You can download it using:
+   ```bash
+   ollama pull deepseek-r1:1.5b
+   ```
+
+5. **Generate Stories**  
+   The app will use the Ollama API to generate structured stories based on user input.
 
 ## Get a fresh project
 
