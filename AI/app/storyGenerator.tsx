@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import StoryPopup from './storyPopup';
 import LottieView from 'lottie-react-native';
+import BottomNavigation from './bottomNavigations';
 
 const StoryGenerator = () => {
   const router = useRouter();
@@ -196,6 +197,8 @@ const StoryGenerator = () => {
         loading={loading}
         errorMessage={error}
       />
+      
+      <BottomNavigation></BottomNavigation>
       
     </ScrollView>
   );

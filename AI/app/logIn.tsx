@@ -1,5 +1,18 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, ImageBackground, TouchableOpacity, StyleSheet, Dimensions, Image, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
+import React, { useState, useRef } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  ImageBackground,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+  Animated,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons"; // Eye icon for password visibility
@@ -13,25 +26,26 @@ const LoginScreen = () => {
   const [error, setError] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  // Regular Expressions for Validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Standard email validation
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const emailAnim = useRef(new Animated.Value(0)).current;
+  const passwordAnim = useRef(new Animated.Value(0)).current;
+
+  const handleFocus = (anim: Animated.Value) => {
+    Animated.timing(anim, {
+      toValue: -10,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleBlur = (anim: Animated.Value) => {
+    Animated.timing(anim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
 
   const handleLogin = () => {
-    // if (!email || !password) {
-    //   setError("Please enter both email and password.");
-    //   return;
-    // }
-    // if (!emailRegex.test(email)) {
-    //   setError("Please enter a valid email.");
-    //   return;
-    // }
-    // if (!passwordRegex.test(password)) {
-    //   setError("Password must be at least 8 characters long, including uppercase, lowercase, number, and special character.");
-    //   return;
-    // }
-
-    // setError("");
     router.push("/landingPage");
   };
 
@@ -52,36 +66,54 @@ const LoginScreen = () => {
               <Text style={styles.title}>Welcome Back</Text>
               <Text style={styles.subtitle}>Log in to continue your journey</Text>
 
-              {/* Email Input */}
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                placeholderTextColor="#D1ECFF"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-
-              {/* Password Input with Eye Icon */}
-              <View style={styles.passwordContainer}>
+              {/* Email Input with Animation */}
+              <Animated.View
+                style={[
+                  styles.animatedInputContainer,
+                  { transform: [{ translateY: emailAnim }] },
+                ]}
+              >
                 <TextInput
-                  style={styles.passwordInput}
-                  placeholder="Password"
+                  style={styles.input}
+                  placeholder="Email"
                   placeholderTextColor="#D1ECFF"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!passwordVisible}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  onFocus={() => handleFocus(emailAnim)}
+                  onBlur={() => handleBlur(emailAnim)}
                 />
-                <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
-                  <Ionicons
-                    name={passwordVisible ? "eye-off" : "eye"}
-                    size={22}
-                    color="white"
-                    style={styles.eyeIcon}
+              </Animated.View>
+
+              {/* Password Input with Animation */}
+              <Animated.View
+                style={[
+                  styles.animatedInputContainer,
+                  { transform: [{ translateY: passwordAnim }] },
+                ]}
+              >
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Password"
+                    placeholderTextColor="#D1ECFF"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!passwordVisible}
+                    onFocus={() => handleFocus(passwordAnim)}
+                    onBlur={() => handleBlur(passwordAnim)}
                   />
-                </TouchableOpacity>
-              </View>
+                  <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
+                    <Ionicons
+                      name={passwordVisible ? "eye-off" : "eye"}
+                      size={22}
+                      color="white"
+                      style={styles.eyeIcon}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </Animated.View>
 
               {/* Error Message */}
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -93,7 +125,9 @@ const LoginScreen = () => {
 
               {/* Signup & Forgot Password Links */}
               <TouchableOpacity onPress={() => router.push("/signUp")}>
-                <Text style={styles.noAccountText}>Don't have an account? <Text style={styles.signupText}>Sign Up</Text></Text>
+                <Text style={styles.noAccountText}>
+                  Don't have an account? <Text style={styles.signupText}>Sign Up</Text>
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => router.push("/forgotPassword")}>
                 <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
@@ -150,13 +184,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: "center",
   },
+  animatedInputContainer: {
+    width: "100%",
+    marginBottom: 12,
+  },
   input: {
     width: "100%",
     backgroundColor: "rgba(255, 255, 255, 0.1)",
     paddingVertical: 12,
     paddingHorizontal: 15,
     borderRadius: 10,
-    marginBottom: 12,
     color: "#FFFFFF",
     fontSize: 16,
   },
@@ -167,7 +204,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.1)",
     borderRadius: 10,
     paddingHorizontal: 15,
-    marginBottom: 12,
   },
   passwordInput: {
     flex: 1,
