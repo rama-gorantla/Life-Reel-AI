@@ -12,7 +12,8 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import LottieView from 'lottie-react-native';
+import LottieView from 'lottie-react-native'; 
+import BottomNavigation from './bottomNavigations';          
 import VideoPopup from './videoPopup';
 
 const VideoGenerator = () => {
@@ -95,23 +96,25 @@ const VideoGenerator = () => {
         <Text style={styles.uploadText}>{fileName ?? 'Upload Story File'}</Text>
       </TouchableOpacity>
 
-      <Text style={styles.subText}>OR</Text>
+      {/* <Text style={styles.subText}>OR</Text> */}
 
       {/* Story Text Input */}
-      <TextInput
+      {/* <TextInput
         style={styles.textBox}
         placeholder="Enter your story here..."
         placeholderTextColor="#bbb"
         multiline
         value={storyText}
         onChangeText={setStoryText}
-      />
+      /> */}
 
       {/* Generate Button */}
       <TouchableOpacity style={styles.button} onPress={handleGenerateVideo}>
         <Text style={styles.buttonText}>{isVideoGenerating ? 'Generating...' : 'Generate Video'}</Text>
 
       </TouchableOpacity>
+
+      <BottomNavigation />
 
       {/* Video Popup */}
       <VideoPopup
@@ -127,9 +130,10 @@ const VideoGenerator = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: '#2c2c54',
-    minHeight: '100%',
+     flex: 1,
+    backgroundColor: "#1B1C36",
+    paddingHorizontal: 16,
+    paddingTop: 25,
   },
   header: {
     flexDirection: 'row',
