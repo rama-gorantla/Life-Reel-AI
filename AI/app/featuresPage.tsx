@@ -7,7 +7,13 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  Share,
+  Alert,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import * as Speech from "expo-speech";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import BottomNavigation from "./bottomNavigations";
@@ -18,6 +24,7 @@ const FeaturesScreen = () => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showFullStory, setShowFullStory] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const story = {
     title: "A Simple Family Story",
@@ -31,11 +38,54 @@ const FeaturesScreen = () => {
     ],
   };
 
+  const fullStoryText = story.content.join(" ");
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
     if (hour < 18) return "Good afternoon";
     return "Good evening";
+  };
+
+  const handleTextToSpeech = () => {
+    setIsSpeaking(true);
+    Speech.speak(fullStoryText, {
+      onDone: () => setIsSpeaking(false),
+      onStopped: () => setIsSpeaking(false),
+    });
+  };
+
+  const stopTextToSpeech = () => {
+    Speech.stop();
+    setIsSpeaking(false);
+  };
+
+  const handleCopy = async () => {
+    await Clipboard.setStringAsync(fullStoryText);
+    Alert.alert("Copied", "Story copied to clipboard!");
+  };
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: fullStoryText,
+      });
+    } catch (error) {
+      Alert.alert("Error", "Unable to share the story.");
+    }
+  };
+
+  const handleExportPDF = async () => {
+    const htmlContent = `
+      <html>
+        <body style="font-family: Arial; padding: 20px;">
+          <h2>${story.title}</h2>
+          ${story.content.map(p => `<p>${p}</p>`).join("")}
+        </body>
+      </html>
+    `;
+    const { uri } = await Print.printToFileAsync({ html: htmlContent });
+    await Sharing.shareAsync(uri);
   };
 
   return (
@@ -49,42 +99,83 @@ const FeaturesScreen = () => {
         </View>
       </View>
 
-      {/* User Greeting */}
+      {/* Greeting */}
       <View style={styles.greetingContainer}>
         <Image source={require("../assets/images/dummyProfile.png")} style={styles.profileImage} />
         <Text style={styles.greetingText}>{getGreeting()}, Rama 👋</Text>
       </View>
 
-      {/* Middle Content */}
-      <View style={styles.middleContainer}>
-        {!showFullStory ? (
-          <>
-            <Text style={styles.storyTitle}>{story.title}</Text>
-            <Image source={story.poster} style={styles.poster} />
-            <TouchableOpacity
-              style={styles.forwardButton}
-              onPress={() => setShowFullStory(true)}
-            >
-              <Ionicons name="arrow-forward" size={24} color="white" />
-            </TouchableOpacity>
-          </>
-        ) : (
-          <>
-            <View style={styles.storyScrollWrapper}>
-              <ScrollView style={styles.storyScroll} showsVerticalScrollIndicator>
-                {story.content.map((para, idx) => (
-                  <Text key={idx} style={styles.fullStoryText}>{para}</Text>
-                ))}
-              </ScrollView>
-            </View>
-            <TouchableOpacity onPress={() => setShowFullStory(false)} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={22} color="#fff" />
-            </TouchableOpacity>
-          </>
-        )}
+      {/* Main Content */}
+     <View style={styles.middleContainer}>
+  {!showFullStory ? (
+    <>
+      <Text style={styles.storyTitle}>{story.title}</Text>
+      <Image source={story.poster} style={styles.poster} />
+      <TouchableOpacity style={styles.forwardButton} onPress={() => setShowFullStory(true)}>
+        <Ionicons name="arrow-forward" size={16} color="white" />
+      </TouchableOpacity>
+    </>
+  ) : (
+    <>
+      {/* Scrollable story box */}
+      <View style={styles.storyBox}>
+        <ScrollView showsVerticalScrollIndicator={true}>
+          {story.content.map((para, idx) => (
+            <Text key={idx} style={styles.fullStoryText}>{para}</Text>
+          ))}
+        </ScrollView>
       </View>
 
-      {/* Action Buttons */}
+      {/* Navigation and Speech Controls */}
+<View style={styles.storyControls}>
+  {/* Back Button - Left */}
+  <TouchableOpacity style={styles.backArrow} onPress={() => setShowFullStory(false)}>
+    <Ionicons name="arrow-back" size={16} color="#fff" />
+  </TouchableOpacity>
+
+  {/* Speech Buttons - Right */}
+  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+    <TouchableOpacity onPress={handleTextToSpeech}>
+      <Ionicons name="volume-high-outline" size={24} color="white" />
+    </TouchableOpacity>
+    {isSpeaking && (
+      <TouchableOpacity onPress={stopTextToSpeech}>
+        <Ionicons name="stop-circle-outline" size={24} color="red" />
+      </TouchableOpacity>
+    )}
+  </View>
+</View>
+
+
+      {/* Story utility actions */}
+      {/* <View style={styles.storyActions}>
+        <TouchableOpacity onPress={handleTextToSpeech}>
+          <Ionicons name="volume-high-outline" size={24} color="white" />
+        </TouchableOpacity>
+        {isSpeaking && (
+          <TouchableOpacity onPress={stopTextToSpeech}>
+            <Ionicons name="stop-circle-outline" size={24} color="red" />
+          </TouchableOpacity>
+        )} */}
+        {/* <TouchableOpacity onPress={handleCopy}>
+          <Ionicons name="copy-outline" size={24} color="white" />
+        </TouchableOpacity>
+      
+        <TouchableOpacity onPress={handleExportPDF}>
+          <Ionicons name="document-outline" size={24} color="white" />
+        </TouchableOpacity> */}
+      {/* </View> */}
+
+      {/* Back Button */}
+      {/* <TouchableOpacity onPress={() => setShowFullStory(false)} style={styles.backButton}>
+        <Ionicons name="arrow-back" size={22} color="#fff" />
+      </TouchableOpacity> */}
+    </>
+  )}
+</View>
+
+
+      {/* Bottom Action Buttons */}
       <View style={styles.actionsContainer}>
         <View style={styles.leftActions}>
           <TouchableOpacity onPress={() => setLiked(!liked)}>
@@ -98,9 +189,9 @@ const FeaturesScreen = () => {
           <TouchableOpacity>
             <Ionicons name="chatbubble-outline" size={24} color="white" style={styles.icon} />
           </TouchableOpacity>
-          <TouchableOpacity>
-            <Ionicons name="share-social-outline" size={24} color="white" style={styles.icon} />
-          </TouchableOpacity>
+            <TouchableOpacity onPress={handleShare}>
+          <Ionicons name="share-social-outline" size={24} color="white" />
+        </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={() => setSaved(!saved)}>
           <Ionicons
@@ -112,7 +203,6 @@ const FeaturesScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Bottom Navigation */}
       <BottomNavigation />
     </SafeAreaView>
   );
@@ -148,6 +238,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
+  storyControls: {
+  width: width - 40,
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginTop: 16,
+},
+
+  storyBox: {
+  height: 300,
+  width: width - 40,
+  backgroundColor: "#2F3C7E",
+  borderRadius: 12,
+  padding: 16,
+  marginTop: 20,
+},
   profileImage: {
     width: 50,
     height: 50,
@@ -181,13 +287,22 @@ const styles = StyleSheet.create({
     marginTop: 20,
     backgroundColor: "#1E90FF",
     padding: 12,
-    borderRadius: 30,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
+  backArrow: {
+        padding: 12,
+
+    borderRadius: 20,
+    backgroundColor: "#1E90FF",
+  },
+  
   backButton: {
-    marginTop: 16,
-    alignItems: "center",
+  marginTop: 16,
+  alignItems: "center",
+  justifyContent: "center",
+
   },
   storyScrollWrapper: {
     height: 300,
@@ -197,6 +312,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginTop: 20,
   },
+  
   storyScroll: {
     flex: 1,
   },
@@ -206,6 +322,13 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 16,
     textAlign: "center",
+  },
+  storyActions: {
+    flexDirection: "row",
+  marginTop: 12,
+  justifyContent: "center",
+  alignItems: "center",
+  gap: 20,
   },
   actionsContainer: {
     flexDirection: "row",
