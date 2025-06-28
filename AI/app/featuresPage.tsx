@@ -7,7 +7,6 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
-  FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,10 +17,7 @@ const { width } = Dimensions.get("window");
 const FeaturesScreen = () => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [showStory, setShowStory] = useState(false);
-
   const [showFullStory, setShowFullStory] = useState(false);
-
 
   const story = {
     title: "A Simple Family Story",
@@ -44,6 +40,7 @@ const FeaturesScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.logo}>LifeReel</Text>
         <View style={styles.headerIcons}>
@@ -52,65 +49,70 @@ const FeaturesScreen = () => {
         </View>
       </View>
 
+      {/* User Greeting */}
       <View style={styles.greetingContainer}>
         <Image source={require("../assets/images/dummyProfile.png")} style={styles.profileImage} />
         <Text style={styles.greetingText}>{getGreeting()}, Rama 👋</Text>
       </View>
 
-     <ScrollView contentContainerStyle={styles.middleContainer}>
-  {!showFullStory ? (
-    <>
-      <Text style={styles.storyTitle}>{story.title}</Text>
-      <Image source={story.poster} style={styles.poster} />
+      {/* Middle Content */}
+      <View style={styles.middleContainer}>
+        {!showFullStory ? (
+          <>
+            <Text style={styles.storyTitle}>{story.title}</Text>
+            <Image source={story.poster} style={styles.poster} />
+            <TouchableOpacity
+              style={styles.forwardButton}
+              onPress={() => setShowFullStory(true)}
+            >
+              <Ionicons name="arrow-forward" size={24} color="white" />
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <View style={styles.storyScrollWrapper}>
+              <ScrollView style={styles.storyScroll} showsVerticalScrollIndicator>
+                {story.content.map((para, idx) => (
+                  <Text key={idx} style={styles.fullStoryText}>{para}</Text>
+                ))}
+              </ScrollView>
+            </View>
+            <TouchableOpacity onPress={() => setShowFullStory(false)} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={22} color="#fff" />
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
 
-      {/* Forward Arrow Button */}
-      <TouchableOpacity
-        style={styles.forwardButton}
-        onPress={() => setShowFullStory(true)}
-      >
-        <Ionicons name="arrow-forward" size={24} color="white" />
-      </TouchableOpacity>
-    </>
-  ) : (
-    <View style={styles.storyScrollContainer}>
-      {story.content.map((para, idx) => (
-        <Text key={idx} style={styles.fullStoryText}>
-          {para}
-        </Text>
-      ))}
-    </View>
-  )}
+      {/* Action Buttons */}
+      <View style={styles.actionsContainer}>
+        <View style={styles.leftActions}>
+          <TouchableOpacity onPress={() => setLiked(!liked)}>
+            <Ionicons
+              name={liked ? "heart" : "heart-outline"}
+              size={26}
+              color={liked ? "red" : "white"}
+              style={styles.icon}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Ionicons name="chatbubble-outline" size={24} color="white" style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Ionicons name="share-social-outline" size={24} color="white" style={styles.icon} />
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity onPress={() => setSaved(!saved)}>
+          <Ionicons
+            name={saved ? "bookmark" : "bookmark-outline"}
+            size={24}
+            color="white"
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+      </View>
 
-  {/* Action Buttons (Always Show) */}
-  <View style={styles.actionsContainer}>
-    <View style={styles.leftActions}>
-      <TouchableOpacity onPress={() => setLiked(!liked)}>
-        <Ionicons
-          name={liked ? "heart" : "heart-outline"}
-          size={26}
-          color={liked ? "red" : "white"}
-          style={styles.icon}
-        />
-      </TouchableOpacity>
-      <TouchableOpacity>
-        <Ionicons name="chatbubble-outline" size={24} color="white" style={styles.icon} />
-      </TouchableOpacity>
-      <TouchableOpacity>
-        <Ionicons name="share-social-outline" size={24} color="white" style={styles.icon} />
-      </TouchableOpacity>
-    </View>
-    <TouchableOpacity onPress={() => setSaved(!saved)}>
-      <Ionicons
-        name={saved ? "bookmark" : "bookmark-outline"}
-        size={24}
-        color="white"
-        style={styles.icon}
-      />
-    </TouchableOpacity>
-  </View>
-</ScrollView>
-
-
+      {/* Bottom Navigation */}
       <BottomNavigation />
     </SafeAreaView>
   );
@@ -158,6 +160,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   middleContainer: {
+    flex: 1,
     alignItems: "center",
     padding: 20,
   },
@@ -174,50 +177,42 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     resizeMode: "cover",
   },
-  arrowButton: {
-    marginTop: 20,
-  },
   forwardButton: {
-  marginTop: 20,
-  backgroundColor: "#1E90FF",
-  padding: 12,
-  borderRadius: 30,
-  alignItems: "center",
-  justifyContent: "center",
-},
-
-storyScrollContainer: {
-  backgroundColor: "#2F3C7E",
-  padding: 20,
-  borderRadius: 12,
-  marginTop: 20,
-  width: width - 40,
-},
-
-fullStoryText: {
-  fontSize: 16,
-  color: "#fff",
-  lineHeight: 24,
-  marginBottom: 16,
-},
-
-  page: {
-    width: width,
-    padding: 20,
+    marginTop: 20,
+    backgroundColor: "#1E90FF",
+    padding: 12,
+    borderRadius: 30,
+    alignItems: "center",
     justifyContent: "center",
+  },
+  backButton: {
+    marginTop: 16,
     alignItems: "center",
   },
-  pageText: {
-    color: "#fff",
+  storyScrollWrapper: {
+    height: 300,
+    width: width - 40,
+    backgroundColor: "#2F3C7E",
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 20,
+  },
+  storyScroll: {
+    flex: 1,
+  },
+  fullStoryText: {
     fontSize: 16,
-    lineHeight: 26,
+    color: "#fff",
+    lineHeight: 24,
+    marginBottom: 16,
     textAlign: "center",
   },
   actionsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: width - 40,
-    marginTop: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: "#1B1C36",
   },
   leftActions: {
     flexDirection: "row",
