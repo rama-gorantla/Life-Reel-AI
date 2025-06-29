@@ -297,17 +297,23 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   messageBubble: {
-    padding: 12,
     borderRadius: 10,
     marginVertical: 6,
-    maxWidth: "85%",
+    maxWidth: "100%",
+    padding: 0, // Remove padding here for edge-to-edge effect
   },
   userBubble: {
     alignSelf: "flex-end",
+    backgroundColor: "#00cec9", // keep user bubble colored and right-aligned
+    padding: 12,                // keep padding for user bubble
   },
   aiBubble: {
-    backgroundColor: "#2F3C7E",
+    backgroundColor: "transparent", // invisible background
     alignSelf: "flex-start",
+    width: "100%",                  // fill the width
+    padding: 0,                     // no extra padding
+    marginLeft: 0,
+    marginRight: 0,
   },
   messageText: {
     color: "#F4F4F4",
