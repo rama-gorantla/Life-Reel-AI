@@ -8,6 +8,9 @@ import {
   Image,
   FlatList,
   Platform,
+  Modal,
+  ScrollView,
+  Dimensions,
 } from "react-native";
 import {
   Ionicons,
@@ -15,6 +18,8 @@ import {
   MaterialIcons,
   Feather,
 } from "@expo/vector-icons";
+import PosterBg from "@/assets/images/istockphoto-522119064.jpg";
+import { ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import BottomNavigation from "./bottomNavigations";
@@ -37,6 +42,12 @@ const StoryGenerator = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
+
+  // Poster modal state
+  const [posterVisible, setPosterVisible] = useState(false);
+  const [posterPages, setPosterPages] = useState<string[]>([]);
+  const [posterPageIndex, setPosterPageIndex] = useState(0);
+  const screenWidth = Dimensions.get("window").width;
 
   const isValidIdea = (text: string) => {
     return text && text.trim().split(" ").length >= 5;
@@ -163,8 +174,132 @@ const StoryGenerator = () => {
     await Sharing.shareAsync(fileUri);
   };
 
+  // --- Poster logic ---
+  const handleMakePoster = (answer: string) => {
+    // Assume the first line is the title, rest is the story
+    const lines = answer.split('\n').filter(l => l.trim() !== '');
+    const title = lines[0];
+    const story = lines.slice(1).join(' ');
+    // Split story into chunks of ~50 words for each poster page
+    const words = story.split(' ');
+    const pages = [];
+    let chunk = '';
+    let wordCount = 0;
+    for (let word of words) {
+      chunk += (chunk ? ' ' : '') + word;
+      wordCount++;
+      if (wordCount >= 50) {
+        pages.push(chunk.trim());
+        chunk = '';
+        wordCount = 0;
+      }
+    }
+    if (chunk.trim()) pages.push(chunk.trim());
+    setPosterPages([title, ...pages]);
+    setPosterPageIndex(0);
+    setPosterVisible(true);
+  };
+
   return (
     <View style={styles.container}>
+      {/* Poster Modal */}
+      <Modal visible={posterVisible} animationType="slide" transparent={false}>
+        <View style={{ flex: 1, backgroundColor: "#1B1C36" }}>
+          <TouchableOpacity
+            style={{ padding: 16, alignSelf: "flex-end" }}
+            onPress={() => setPosterVisible(false)}
+          >
+            <Text style={{ color: "#fff", fontSize: 18 }}>Close</Text>
+          </TouchableOpacity>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            style={{ flex: 1 }}
+            onScroll={e => {
+              const page = Math.round(
+                e.nativeEvent.contentOffset.x / screenWidth
+              );
+              setPosterPageIndex(page);
+            }}
+            scrollEventThrottle={16}
+          >
+            {posterPages.map((text, idx) => (
+              <View
+                key={idx}
+                style={{
+                  width: screenWidth,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 24,
+                }}
+              >
+                <ImageBackground
+                  source={PosterBg}
+                  resizeMode="cover"
+                  style={{
+                    width: "100%",
+                    height: 400, // fixed height to avoid cropping
+                    justifyContent: "center",
+                    alignItems: "center",
+                    borderRadius: 24,
+                    overflow: "hidden",
+                  }}
+                  imageStyle={{
+                    borderRadius: 24,
+                  }}
+                >
+                  <View
+                    style={{
+                      backgroundColor: "rgba(35, 39, 47, 0.5)",
+                      width: "100%",
+                      height: "100%",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: 24,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#fff",
+                        fontSize: idx === 0 ? 28 : 20,
+                        fontWeight: idx === 0 ? "bold" : "normal",
+                        textAlign: "center",
+                        textShadowColor: "#000",
+                        textShadowOffset: { width: 1, height: 1 },
+                        textShadowRadius: 4,
+                      }}
+                    >
+                      {text}
+                    </Text>
+                  </View>
+                </ImageBackground>
+              </View>
+            ))}
+          </ScrollView>
+          {/* Page Indicator */}
+          <View style={{ alignItems: "center", marginVertical: 12 }}>
+            <Text style={{ color: "#fff" }}>
+              Page {posterPageIndex + 1} of {posterPages.length}
+            </Text>
+            <View style={{ flexDirection: "row", marginTop: 4 }}>
+              {posterPages.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: idx === posterPageIndex ? "#fff" : "#555",
+                    marginHorizontal: 3,
+                  }}
+                />
+              ))}
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -238,6 +373,22 @@ const StoryGenerator = () => {
                     color="#fff"
                     style={styles.icon}
                   />
+                </TouchableOpacity>
+                {/* Make Poster Button */}
+                <TouchableOpacity
+                  onPress={() => handleMakePoster(item.content)}
+                  style={{
+                    backgroundColor: "#23272f",
+                    borderRadius: 8,
+                    paddingVertical: 6,
+                    paddingHorizontal: 14,
+                    marginTop: 8,
+                    alignSelf: "flex-start",
+                  }}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                    Make Poster
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -322,6 +473,8 @@ const styles = StyleSheet.create({
   iconRow: {
     flexDirection: "row",
     marginTop: 8,
+    flexWrap: "wrap",
+    gap: 8,
   },
   icon: {
     marginRight: 16,
