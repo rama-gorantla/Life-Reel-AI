@@ -54,13 +54,13 @@
 
 //     setMessages((prev) => [...prev, { sender: "User", content: idea }]);
 //     setIdea("");
+//     setPreviousUserRequest(idea); // <-- Move this here!
 //     try {
 //       await fetchStructuredStoryFromOllama(idea);
 //     } catch (err: any) {
 //       setError(err.message);
 //     } finally {
 //       setLoading(false);
-//       setPreviousUserRequest(idea);
 //     }
 //   };
 
@@ -416,6 +416,7 @@ const StoryGenerator = () => {
   const [posterVisible, setPosterVisible] = useState(false);
   const [posterPages, setPosterPages] = useState<string[]>([]);
   const [posterPageIndex, setPosterPageIndex] = useState(0);
+  const [posterModalKey, setPosterModalKey] = useState(0);
   const screenWidth = Dimensions.get("window").width;
 
   const isValidIdea = (text: string) => {
@@ -434,20 +435,26 @@ const StoryGenerator = () => {
 
     setMessages((prev) => [...prev, { sender: "User", content: idea }]);
     setIdea("");
+    setPreviousUserRequest(idea); // <-- Move this here!
     try {
       await fetchStructuredStoryFromOllama(idea);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
-      setPreviousUserRequest(idea);
     }
   };
 
   const fetchStructuredStoryFromOllama = async (idea: string) => {
     try {
-      const chatHistory = `User(previous): ${previousUserRequest}\n AI:${lastFiveLines}\n User:Generate a structured story based on the above context. Don't ask additional questions ${idea}\nAI: `;
-
+      let chatHistory = "";
+      if (!previousUserRequest) {
+        // First request
+        chatHistory = `User:Generate a structured story based on the above context. Don't ask additional questions. It should start with Title: ${idea}\nAI: `;
+      } else {
+        // Subsequent requests
+        chatHistory = `User(previous): ${previousUserRequest}\nAI:${lastFiveLines}\nUser: Generate a structured story based on the above context. Don't ask additional questions. It should start with Title: ${idea}\nAI: `;
+      }
       const response = await fetch("http://localhost:11434/api/generate", {
         method: "POST",
         headers: {
@@ -557,7 +564,7 @@ const StoryGenerator = () => {
     for (let word of words) {
       chunk += (chunk ? ' ' : '') + word;
       wordCount++;
-      if (wordCount >= 50) {
+      if (wordCount >= 100) {
         pages.push(chunk.trim());
         chunk = '';
         wordCount = 0;
@@ -566,17 +573,34 @@ const StoryGenerator = () => {
     if (chunk.trim()) pages.push(chunk.trim());
     setPosterPages([title, ...pages]);
     setPosterPageIndex(0);
+    setPosterModalKey(prev => prev + 1); // Change key to force remount
     setPosterVisible(true);
   };
 
   return (
     <View style={styles.container}>
       {/* Poster Modal */}
-      <Modal visible={posterVisible} animationType="slide" transparent={false}>
+      <Modal
+        key={posterModalKey}
+        visible={posterVisible}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => {
+          setPosterVisible(false);
+          setPosterPages([]);
+          setPosterPageIndex(0);
+          setPosterModalKey(prev => prev + 1); 
+        }}
+      >
         <View style={{ flex: 1, backgroundColor: "#1B1C36" }}>
           <TouchableOpacity
             style={{ padding: 16, alignSelf: "flex-end" }}
-            onPress={() => setPosterVisible(false)}
+            onPress={() => {
+              setPosterVisible(false);
+              setPosterPages([]);
+              setPosterPageIndex(0);
+              setPosterModalKey(prev => prev + 1); // <-- Add this line
+            }}
           >
             <Text style={{ color: "#fff", fontSize: 18 }}>Close</Text>
           </TouchableOpacity>
@@ -806,7 +830,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     flex: 1, // Center the title
-    margin:20
 
   },
   chatContainer: {
