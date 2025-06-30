@@ -8,13 +8,15 @@ import {
   Alert,
   Image,
   Platform,
+  ScrollView,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import LottieView from 'lottie-react-native'; 
-import BottomNavigation from './bottomNavigations';          
+import LottieView from 'lottie-react-native';
+import BottomNavigation from './bottomNavigations';
 import VideoPopup from './videoPopup';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const VideoGenerator = () => {
   const router = useRouter();
@@ -35,9 +37,8 @@ const VideoGenerator = () => {
     setIsVideoGenerating(true);
     setVideoError(null);
 
-    // Simulate video generation delay
     setTimeout(() => {
-      setGeneratedVideoUrl(require('../assets/images/video.mp4')); // Local video
+      setGeneratedVideoUrl(require('../assets/images/video.mp4'));
       setIsVideoGenerating(false);
       setVideoModalVisible(true);
     }, 800);
@@ -57,64 +58,47 @@ const VideoGenerator = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() =>
-            router.canGoBack() ? router.back() : router.replace('/featuresPage')
-          }
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          <MaterialIcons name="video-library" size={18} color="#fff" /> AI Video Generator
-        </Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.innerContainer}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+
+          {/* Header */}
+          <Text style={styles.headerTitle}>AI Video Generator</Text>
+          <Text style={styles.subText}>
+            Upload or write a story to generate an AI animated video ✨.
+          </Text>
+
+          {/* Animation / Image */}
+          <View style={{ alignItems: 'center' }}>
+            {Platform.OS === 'web' ? (
+              <Image source={require('../assets/images/video.gif')} style={styles.gif} />
+            ) : (
+              <LottieView
+                source={require('../assets/images/videoAI.json')}
+                autoPlay
+                loop
+                style={{ width: 200, height: 200 }}
+              />
+            )}
+          </View>
+
+          {/* Upload Button */}
+          <TouchableOpacity style={styles.uploadButton} onPress={handleFileUpload}>
+            <Ionicons name="cloud-upload-outline" size={20} color="#fff" />
+            <Text style={styles.uploadText}>{fileName ?? 'Upload Story File'}</Text>
+          </TouchableOpacity>
+
+          {/* Generate Button */}
+          <TouchableOpacity style={styles.button} onPress={handleGenerateVideo}>
+            <Text style={styles.buttonText}>
+              {isVideoGenerating ? 'Generating...' : 'Generate Video'}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+
+        {/* Sticky Bottom Navigation */}
+        <BottomNavigation />
       </View>
-
-      <Text style={styles.subText}>
-        Upload or write a story to generate an AI animated video ✨.
-      </Text>
-
-      <View style={{ alignItems: 'center' }}>
-        {Platform.OS === 'web' ? (
-          <Image source={require('../assets/images/video.gif')} style={styles.gif} />
-        ) : (
-          <LottieView
-            source={require('../assets/images/videoAI.json')}
-            autoPlay
-            loop
-            style={{ width: 200, height: 200 }}
-          />
-        )}
-      </View>
-
-      {/* Upload Button */}
-      <TouchableOpacity style={styles.uploadButton} onPress={handleFileUpload}>
-        <Ionicons name="cloud-upload-outline" size={20} color="#fff" />
-        <Text style={styles.uploadText}>{fileName ?? 'Upload Story File'}</Text>
-      </TouchableOpacity>
-
-      {/* <Text style={styles.subText}>OR</Text> */}
-
-      {/* Story Text Input */}
-      {/* <TextInput
-        style={styles.textBox}
-        placeholder="Enter your story here..."
-        placeholderTextColor="#bbb"
-        multiline
-        value={storyText}
-        onChangeText={setStoryText}
-      /> */}
-
-      {/* Generate Button */}
-      <TouchableOpacity style={styles.button} onPress={handleGenerateVideo}>
-        <Text style={styles.buttonText}>{isVideoGenerating ? 'Generating...' : 'Generate Video'}</Text>
-
-      </TouchableOpacity>
-
-      <BottomNavigation />
 
       {/* Video Popup */}
       <VideoPopup
@@ -124,45 +108,43 @@ const VideoGenerator = () => {
         loading={isVideoGenerating}
         errorMessage={videoError || ''}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
+export default VideoGenerator;
+
 const styles = StyleSheet.create({
   container: {
-     flex: 1,
+    flex: 1,
     backgroundColor: "#1B1C36",
-    paddingHorizontal: 16,
-    paddingTop: 25,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 15,
+  innerContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
-  backButton: {
-    padding: 8,
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 80,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#f5f6fa',
+    textAlign: 'center',
+    marginBottom: 10,
   },
   subText: {
     color: '#f5f6fa',
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 10,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#f5f6fa',
-    textAlign: 'center',
-    marginRight: 32,
+    marginBottom: 20,
   },
   gif: {
     width: 200,
     height: 200,
     resizeMode: 'contain',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   uploadButton: {
     backgroundColor: '#5f5fff',
@@ -178,18 +160,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
   },
-  textBox: {
-    backgroundColor: '#3d3d74',
-    color: '#fff',
-    borderRadius: 12,
-    padding: 15,
-    fontSize: 16,
-    minHeight: 120,
-    textAlignVertical: 'top',
-    borderWidth: 1,
-    borderColor: '#4b4b88',
-    marginBottom: 20,
-  },
   button: {
     backgroundColor: '#00e5e5',
     borderRadius: 10,
@@ -202,5 +172,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-export default VideoGenerator;

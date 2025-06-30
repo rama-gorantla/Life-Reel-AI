@@ -1,4 +1,3 @@
-
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,8 +11,8 @@ const navItems: {
   { icon: "home-outline", label: "Home", route: "/featuresPage" },
   { icon: "create-outline", label: "Story Gen", route: "/storyGenerator" },
   { icon: "videocam-outline", label: "Video Gen", route: "/videoGenerator" },
-  { icon: "book-outline", label: "Read", route: "/readStories" },
-  { icon: "tv-outline", label: "Watch", route: "/watchStories" },
+  { icon: "search-outline", label: "Explore", route: "/explore" },
+  { icon: "person-outline", label: "Profile", route: "/profile" },
 ];
 
 const BottomNavigation = () => {
@@ -54,8 +53,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderTopWidth: 1,
     borderColor: "#ddd",
-    // backgroundColor: "#f9f9f9",
   },
-  navItem: { alignItems: "center" },
-  navLabel: { fontSize: 10, marginTop: 2, color: "#fff" },
+  navItem: {
+    alignItems: "center",
+  },
+  navLabel: {
+    fontSize: 10,
+    marginTop: 2,
+    color: "#fff",
+  },
 });
