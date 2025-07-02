@@ -589,7 +589,7 @@ const StoryGenerator = () => {
           setPosterVisible(false);
           setPosterPages([]);
           setPosterPageIndex(0);
-          setPosterModalKey(prev => prev + 1); 
+          // setPosterModalKey(prev => prev + 1); 
         }}
       >
         <View style={{ flex: 1, backgroundColor: "#1B1C36" }}>
@@ -599,7 +599,7 @@ const StoryGenerator = () => {
               setPosterVisible(false);
               setPosterPages([]);
               setPosterPageIndex(0);
-              setPosterModalKey(prev => prev + 1); // <-- Add this line
+              //setPosterModalKey(prev => prev + 1); // <-- Add this line
             }}
           >
             <Text style={{ color: "#fff", fontSize: 18 }}>Close</Text>
