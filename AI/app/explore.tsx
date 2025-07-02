@@ -1,38 +1,104 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   TextInput,
   FlatList,
   Image,
   StyleSheet,
   TouchableOpacity,
   Dimensions,
+  Text,
+  Animated,
+  Modal,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Video, ResizeMode } from "expo-av";
 import BottomNavigation from "./bottomNavigations";
 
 const { width } = Dimensions.get("window");
 
-// Dummy data: mix of stories and videos
 const dummyExploreItems = [
-  { id: "1", type: "story", image: "../assets/images/ai.jpg" },
-  { id: "2", type: "video", image: "../assets/images/ai.jpg" },
-  { id: "3", type: "story", image: "../assets/images/ai.jpg" },
-  { id: "4", type: "video", image: "../assets/images/ai.jpg" },
-  { id: "5", type: "story", image: "../assets/images/ai.jpg" },
-  { id: "6", type: "video", image: "../assets/images/ai.jpg" },
+  {
+    id: "1",
+    type: "story",
+    title: "A cute family story",
+    image: require("../assets/images/family.jpg"),
+    story:
+      "In a world where AI and humans coexist peacefully, a new era of innovation begins.",
+  },
+  {
+    id: "2",
+    type: "video",
+    title: "The honey bee",
+    image: require("../assets/images/honeybee.jpg"),
+    videoUrl: require("../assets/images/animatedVideo.mp4"),
+  },
+  {
+    id: "3",
+    type: "story",
+    title: "True friendship",
+    image: require("../assets/images/friend.jpg"),
+    story:
+      "A brilliant scientist builds a robot friend, changing the future of companionship forever.",
+  },
+  {
+    id: "4",
+    type: "video",
+    title: "Amazing AI",
+    image: require("../assets/images/ai.jpg"),
+    videoUrl: require("../assets/images/animatedVideo.mp4"),
+  },
+  {
+    id: "5",
+    type: "story",
+    title: "The robot friend",
+    image: require("../assets/images/honeybee.jpg"),
+    story:
+      "A brilliant scientist builds a robot friend, changing the future of companionship forever.",
+  },
+  {
+    id: "6",
+    type: "video",
+    title: "AI in action",
+    image: require("../assets/images/family.jpg"),
+    videoUrl: require("../assets/images/animatedVideo.mp4"),
+  },
 ];
 
 const ExploreScreen = () => {
   const [search, setSearch] = useState("");
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [scaleAnim] = useState(new Animated.Value(1));
 
   const renderItem = ({ item }: any) => (
-    <TouchableOpacity style={styles.gridItem} activeOpacity={0.8}>
-      <Image source={{ uri: item.image }} style={styles.image} />
-      {item.type === "video" && (
-        <Ionicons name="play-circle" size={28} color="white" style={styles.playIcon} />
-      )}
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() => setSelectedItem(item)}
+      onPressIn={() => {
+        Animated.spring(scaleAnim, {
+          toValue: 1.05,
+          useNativeDriver: true,
+        }).start();
+      }}
+      onPressOut={() => {
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+        }).start();
+      }}
+    >
+      <Animated.View
+        style={[styles.card, { transform: [{ scale: scaleAnim }] }]}
+      >
+        <Image source={item.image} style={styles.cardImage} />
+        {item.type === "video" && (
+          <View style={styles.videoOverlay}>
+            <Ionicons name="play-circle" size={18} color="white" />
+            <Text style={styles.videoText}>Video</Text>
+          </View>
+        )}
+      </Animated.View>
     </TouchableOpacity>
   );
 
@@ -40,7 +106,12 @@ const ExploreScreen = () => {
     <View style={styles.container}>
       {/* Search bar */}
       <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={18} color="#999" style={styles.searchIcon} />
+        <Ionicons
+          name="search-outline"
+          size={18}
+          color="#999"
+          style={styles.searchIcon}
+        />
         <TextInput
           style={styles.searchInput}
           placeholder="Search stories or videos..."
@@ -52,14 +123,74 @@ const ExploreScreen = () => {
 
       {/* Grid layout */}
       <FlatList
-        data={dummyExploreItems}
+       data={[...dummyExploreItems].sort(() => 0.5 - Math.random())}
         numColumns={2}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         columnWrapperStyle={styles.gridWrapper}
-        contentContainerStyle={styles.bottomSpacing}
+        contentContainerStyle={styles.gridContainer}
         showsVerticalScrollIndicator={false}
       />
+
+      {/* Fullscreen Modal */}
+      <Modal visible={!!selectedItem} animationType="fade" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <ScrollView contentContainerStyle={styles.modalContent}>
+            {selectedItem && (
+              <>
+                {/* Show Title */}
+                <Text style={styles.titleText}>{selectedItem.title}</Text>
+
+                {selectedItem.type === "video" ? (
+                  <Video
+                    source={selectedItem.videoUrl}
+                    style={styles.modalVideo}
+                    useNativeControls
+                    resizeMode={ResizeMode.COVER}
+                    shouldPlay
+                  />
+                ) : (
+                  <>
+                    <Image
+                      source={selectedItem.image}
+                      style={styles.modalImage}
+                    />
+                    <Text style={styles.storyText}>{selectedItem.story}</Text>
+                  </>
+                )}
+
+                <View style={styles.actionRow}>
+                  <Ionicons
+                    name="heart-outline"
+                    size={24}
+                    color="white"
+                    style={styles.icon}
+                  />
+                  <Ionicons
+                    name="chatbubble-outline"
+                    size={24}
+                    color="white"
+                    style={styles.icon}
+                  />
+                  <Ionicons
+                    name="share-social-outline"
+                    size={24}
+                    color="white"
+                    style={styles.icon}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={styles.closeBtn}
+                  onPress={() => setSelectedItem(null)}
+                >
+                  <Ionicons name="close-circle" size={32} color="white" />
+                </TouchableOpacity>
+              </>
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
 
       <BottomNavigation />
     </View>
@@ -78,10 +209,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#232640",
     marginHorizontal: 16,
     borderRadius: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     alignItems: "center",
-    marginBottom: 12,
+    marginTop: 16,
+    marginBottom: 10,
   },
   searchIcon: {
     marginRight: 8,
@@ -92,31 +224,92 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   gridWrapper: {
-    paddingHorizontal: 16,
     justifyContent: "space-between",
+    paddingHorizontal: 14,
   },
-  gridItem: {
+  gridContainer: {},
+  card: {
     width: (width - 48) / 2,
-    aspectRatio: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     overflow: "hidden",
     marginBottom: 16,
-    position: "relative",
+    backgroundColor: "#1A1D3D",
+    elevation: 5,
   },
-  image: {
+  cardImage: {
     width: "100%",
-    height: "100%",
+    height: 160,
+    borderRadius: 14,
     resizeMode: "cover",
   },
-  playIcon: {
+  videoOverlay: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 20,
-    padding: 2,
+    bottom: 8,
+    left: 8,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 6,
   },
-  bottomSpacing: {
-    paddingBottom: 80,
+  videoText: {
+    color: "white",
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  titleText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.95)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 40,
+  },
+  modalContent: {
+    width: width - 20,
+    paddingBottom: 40,
+    alignItems: "center",
+  },
+  modalImage: {
+    width: "100%",
+    height: 300,
+    borderRadius: 14,
+    resizeMode: "cover",
+    marginBottom: 12,
+  },
+  modalVideo: {
+    width: "100%",
+    height: 300,
+    borderRadius: 14,
+    backgroundColor: "#000",
+    marginBottom: 12,
+  },
+  storyText: {
+    color: "#ccc",
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 10,
+  },
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    marginTop: 20,
+  },
+  icon: {
+    marginHorizontal: 10,
+  },
+  closeBtn: {
+    position: "absolute",
+    top: 10,
+    right: 10,
   },
 });
