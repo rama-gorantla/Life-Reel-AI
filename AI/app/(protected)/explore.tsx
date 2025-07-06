@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Video, ResizeMode } from "expo-av";
-import BottomNavigation from "./bottomNavigations";
+import BottomNavigation from "../bottomNavigations";
 import * as Speech from "expo-speech";
 
 const { width } = Dimensions.get("window");
@@ -24,7 +24,7 @@ const dummyExploreItems = [
     id: "1",
     type: "story",
     title: "A cute family story",
-    image: require("../assets/images/family.jpg"),
+    image: require("../../assets/images/family.jpg"),
     story:
       "In a world where AI and humans coexist peacefully, a new era of innovation begins. This is a very long story to test scrollable content. Imagine a time where stories expand infinitely with imagination, dreams, adventures and challenges. This should scroll smoothly in the modal popup and also support voice narration with language switching. Repeat this a few times to simulate longer content. Thank you.",
   },
@@ -32,14 +32,14 @@ const dummyExploreItems = [
     id: "2",
     type: "video",
     title: "The honey bee",
-    image: require("../assets/images/honeybee.jpg"),
-    videoUrl: require("../assets/images/sampleVideo.mp4"),
+    image: require("../../assets/images/honeybee.jpg"),
+    videoUrl: require("../../assets/images/sampleVideo.mp4"),
   },
   {
     id: "3",
     type: "story",
     title: "True friendship",
-    image: require("../assets/images/friend.jpg"),
+    image: require("../../assets/images/friend.jpg"),
     story:
       "A brilliant scientist builds a robot friend, changing the future of companionship forever.",
   },
@@ -47,14 +47,14 @@ const dummyExploreItems = [
     id: "4",
     type: "video",
     title: "Amazing AI",
-    image: require("../assets/images/ai.jpg"),
-    videoUrl: require("../assets/images/sampleVideo.mp4"),
+    image: require("../../assets/images/ai.jpg"),
+    videoUrl: require("../../assets/images/sampleVideo.mp4"),
   },
    {
     id: "5",
     type: "story",
     title: "True friendship",
-    image: require("../assets/images/friend.jpg"),
+    image: require("../../assets/images/friend.jpg"),
     story:
       "A brilliant scientist builds a robot friend, changing the future of companionship forever.",
   },
@@ -62,8 +62,8 @@ const dummyExploreItems = [
     id: "6",
     type: "video",
     title: "Amazing AI",
-    image: require("../assets/images/ai.jpg"),
-    videoUrl: require("../assets/images/sampleVideo.mp4"),
+    image: require("../../assets/images/ai.jpg"),
+    videoUrl: require("../../assets/images/sampleVideo.mp4"),
   },
 ];
 

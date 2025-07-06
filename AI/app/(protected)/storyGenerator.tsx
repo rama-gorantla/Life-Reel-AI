@@ -391,7 +391,7 @@ import {
 import { ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
-import BottomNavigation from "./bottomNavigations";
+import BottomNavigation from "../bottomNavigations";
 import * as Speech from "expo-speech";
 import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
@@ -628,7 +628,7 @@ const StoryGenerator = () => {
                 }}
               >
                 <ImageBackground
-                  source={require("../assets/images/istockphoto-522119064.jpg")}
+                  source={require("../../assets/images/istockphoto-522119064.jpg")}
                   resizeMode="cover"
                   style={{
                     width: "100%",
@@ -709,12 +709,12 @@ const StoryGenerator = () => {
         <View style={{ alignItems: "center", marginTop: 30 }}>
           {Platform.OS === "web" ? (
             <Image
-              source={require("../assets/images/read.gif")}
+              source={require("../../assets/images/read.gif")}
               style={styles.gif}
             />
           ) : (
             <LottieView
-              source={require("../assets/images/readAI.json")}
+              source={require("../../assets/images/readAI.json")}
               autoPlay
               loop
               style={styles.gif}

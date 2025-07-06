@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import * as SecureStore from "expo-secure-store";
 import {
   View,
   Text,
@@ -45,8 +46,28 @@ const LoginScreen = () => {
     }).start();
   };
 
-  const handleLogin = () => {
-    router.push("/landingPage");
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      console.log("Login response:", data); 
+      if (data.success && data.token) {
+        if (Platform.OS !== "web") {
+          await SecureStore.setItemAsync("userToken", data.token);
+        }
+        setError(""); // Clear any previous error
+        router.push("/landingPage"); // Navigate to home screen
+    } else {
+        setError(data.error || "Login failed");
+      }
+    } catch (err) {
+      console.log("Login error:", err);
+      setError("Network error");
+    }
   };
 
   return (

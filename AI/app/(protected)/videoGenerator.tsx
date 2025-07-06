@@ -14,8 +14,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
-import BottomNavigation from './bottomNavigations';
-import VideoPopup from './videoPopup';
+import BottomNavigation from '../bottomNavigations';
+import VideoPopup from '../videoPopup';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const VideoGenerator = () => {
@@ -38,7 +38,7 @@ const VideoGenerator = () => {
     setVideoError(null);
 
     setTimeout(() => {
-      setGeneratedVideoUrl(require('../assets/images/video.mp4'));
+      setGeneratedVideoUrl(require('../../assets/images/video.mp4'));
       setIsVideoGenerating(false);
       setVideoModalVisible(true);
     }, 800);
@@ -71,10 +71,10 @@ const VideoGenerator = () => {
           {/* Animation / Image */}
           <View style={{ alignItems: 'center' }}>
             {Platform.OS === 'web' ? (
-              <Image source={require('../assets/images/video.gif')} style={styles.gif} />
+              <Image source={require('../../assets/images/video.gif')} style={styles.gif} />
             ) : (
               <LottieView
-                source={require('../assets/images/videoAI.json')}
+                source={require('../../assets/images/videoAI.json')}
                 autoPlay
                 loop
                 style={{ width: 200, height: 200 }}

@@ -113,7 +113,7 @@ const ReadStories = () => {
       </View>
 
       <Image
-        source={require('../assets/images/on-boarding-image.jpg')}
+        source={require('../../assets/images/on-boarding-image.jpg')}
         style={styles.topImage}
         resizeMode="cover"
       />

@@ -19,7 +19,7 @@ const SignupScreen = () => {
   const nameRegex = /^[a-zA-Z ]{3,}$/;
 
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     if (!name || !email || !password) {
       setError("Please fill in all fields.");
       return;
@@ -37,7 +37,25 @@ const SignupScreen = () => {
       return;
     }
     setError("");
-    router.push("/landingPage");
+    try {
+      const response = await fetch("http://localhost:4000/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert("Signup successful! Please log in.");
+        router.push("/logIn");
+        setName("");
+        setEmail("");
+        setPassword("");
+      } else {
+        setError(data.error || "Signup failed");
+      }
+    } catch (err) {
+      setError("Network error");
+    }
   };
 
 
