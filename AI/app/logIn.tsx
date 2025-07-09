@@ -56,12 +56,14 @@ const LoginScreen = () => {
       const data = await response.json();
       console.log("Login response:", data); 
       if (data.success && data.token) {
-        if (Platform.OS !== "web") {
+        if (Platform.OS === "web") {
+          localStorage.setItem("userToken", data.token);
+        } else {
           await SecureStore.setItemAsync("userToken", data.token);
         }
-        setError(""); // Clear any previous error
-        router.push("/landingPage"); // Navigate to home screen
-    } else {
+        setError("");
+        router.push("/landingPage");
+      } else {
         setError(data.error || "Login failed");
       }
     } catch (err) {

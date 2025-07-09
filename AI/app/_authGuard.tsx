@@ -24,6 +24,9 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       const currentRoute = segments.length > 0 ? `/${segments[0]}` : "/";
       if (!token && currentRoute !== "/logIn") {
         router.replace("/logIn");
+      } else if (token && currentRoute === "/logIn") {
+        // If already logged in and on login page, redirect to landingPage
+        router.replace("/landingPage");
       } else {
         setChecking(false);
       }
